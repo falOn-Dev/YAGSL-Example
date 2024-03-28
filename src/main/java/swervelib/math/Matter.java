@@ -1,6 +1,9 @@
 package swervelib.math;
 
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.Mass;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
 
 /**
  * Object with significant mass that needs to be taken into account.
@@ -13,17 +16,17 @@ public class Matter
    */
   public Translation3d position;
   /**
-   * Mass in kg of object.
+   * Mass in a measure object, of the object.
    */
-  public double        mass;
+  public Measure<Mass> mass;
 
   /**
    * Construct an object representing some significant matter on the robot.
    *
    * @param position Position of the matter in meters.
-   * @param mass     Mass in kg.
+   * @param mass     Mass in a measure object.
    */
-  public Matter(Translation3d position, double mass)
+  public Matter(Translation3d position, Measure<Mass> mass)
   {
     this.mass = mass;
     this.position = position;
@@ -36,6 +39,6 @@ public class Matter
    */
   public Translation3d massMoment()
   {
-    return position.times(mass);
+    return position.times(mass.in(Units.Kilogram));
   }
 }

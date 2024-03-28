@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import java.util.List;
+
+import edu.wpi.first.units.*;
 import swervelib.SwerveController;
 import swervelib.SwerveModule;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -24,27 +26,27 @@ public class SwerveMath
    * Calculate the meters per rotation for the integrated encoder. Calculation: (PI * WHEEL DIAMETER IN METERS) / (GEAR
    * RATIO * ENCODER RESOLUTION)
    *
-   * @param wheelDiameter    Wheel diameter in meters.
+   * @param wheelDiameter    Wheel diameter in a measure.
    * @param driveGearRatio   The gear ratio of the drive motor.
    * @param pulsePerRotation The number of encoder pulses per rotation. 1 if using an integrated encoder.
    * @return Meters per rotation for the drive motor.
    */
   public static double calculateMetersPerRotation(
-      double wheelDiameter, double driveGearRatio, double pulsePerRotation)
+          Measure<Distance> wheelDiameter, double driveGearRatio, double pulsePerRotation)
   {
-    return (Math.PI * wheelDiameter) / (driveGearRatio * pulsePerRotation);
+    return (Math.PI * wheelDiameter.in(Units.Meter)) / (driveGearRatio * pulsePerRotation);
   }
 
   /**
    * Calculate the meters per rotation for the integrated encoder. Calculation: (PI * WHEEL DIAMETER IN METERS) / (GEAR
    * RATIO)
    *
-   * @param wheelDiameter  Wheel diameter in meters.
+   * @param wheelDiameter  Wheel diameter in a measure.
    * @param driveGearRatio The gear ratio of the drive motor.
    * @return Meters per rotation for the drive motor.
    */
   public static double calculateMetersPerRotation(
-      double wheelDiameter, double driveGearRatio)
+      Measure<Distance> wheelDiameter, double driveGearRatio)
   {
     return calculateMetersPerRotation(wheelDiameter, driveGearRatio, 1);
   }
@@ -55,9 +57,9 @@ public class SwerveMath
    * @param angle Angle in degrees.
    * @return Normalized angle in degrees.
    */
-  public static double normalizeAngle(double angle)
+  public static double normalizeAngle(Measure<Angle> angle)
   {
-    Rotation2d angleRotation = Rotation2d.fromDegrees(angle);
+    Rotation2d angleRotation = Rotation2d.fromDegrees(angle.in(Units.Degrees));
     return new Rotation2d(angleRotation.getCos(), angleRotation.getSin()).getDegrees();
   }
 
@@ -81,15 +83,16 @@ public class SwerveMath
    * Create the drive feedforward for swerve modules.
    *
    * @param optimalVoltage                 Optimal voltage to calculate kV (voltage/max Velocity)
-   * @param maxSpeed                       Maximum velocity in meters per second to use for the feed forward, should be
+   * @param maxSpeed                       Maximum velocity in a measure to use for the feed forward, should be
    *                                       as close to physical max as possible.
    * @param wheelGripCoefficientOfFriction Wheel grip coefficient of friction for kA (voltage/(cof*9.81))
    * @return Drive feedforward for drive motor on a swerve module.
    */
-  public static SimpleMotorFeedforward createDriveFeedforward(double optimalVoltage, double maxSpeed,
+  public static SimpleMotorFeedforward createDriveFeedforward(double optimalVoltage,
+                                                              Measure<Velocity<Distance>> maxSpeed,
                                                               double wheelGripCoefficientOfFriction)
   {
-    double kv = optimalVoltage / maxSpeed;
+    double kv = optimalVoltage / maxSpeed.in(Units.MetersPerSecond);
     /// ^ Volt-seconds per meter (max voltage divided by max speed)
     double ka =
         optimalVoltage
@@ -128,15 +131,20 @@ public class SwerveMath
   /**
    * Calculate the maximum angular velocity.
    *
-   * @param maxSpeed        Max speed of the robot in meters per second.
+   * @param maxSpeed        Max speed of the robot in a measure object.
    * @param furthestModuleX X of the furthest module in meters.
    * @param furthestModuleY Y of the furthest module in meters.
    * @return Maximum angular velocity in rad/s.
    */
   public static double calculateMaxAngularVelocity(
-      double maxSpeed, double furthestModuleX, double furthestModuleY)
+      Measure<Velocity<Distance>> maxSpeed,
+      Measure<Distance> furthestModuleX,
+      Measure<Distance> furthestModuleY)
   {
-    return maxSpeed / new Rotation2d(furthestModuleX, furthestModuleY).getRadians();
+    return maxSpeed.in(Units.MetersPerSecond) / new Rotation2d(
+            furthestModuleX.in(Units.Meters),
+            furthestModuleY.in(Units.Meters)
+    ).getRadians();
   }
 
   /**
@@ -156,18 +164,20 @@ public class SwerveMath
    * @param stallTorqueNm Stall torque of driving motor in nM.
    * @param gearRatio     Gear ratio for driving motor number of motor rotations until one wheel rotation.
    * @param moduleCount   Number of swerve modules.
-   * @param wheelDiameter Wheel diameter in meters.
-   * @param robotMass     Mass of the robot in kg.
+   * @param wheelDiameter Wheel diameter in a measure object.
+   * @param robotMass     Mass of the robot in a measure object.
    * @return Theoretical maximum acceleration in m/s/s.
    */
   public static double calculateMaxAcceleration(
       double stallTorqueNm,
       double gearRatio,
       double moduleCount,
-      double wheelDiameter,
-      double robotMass)
+      Measure<Distance> wheelDiameter,
+      Measure<Mass> robotMass)
   {
-    return (stallTorqueNm * gearRatio * moduleCount) / ((wheelDiameter / 2) * robotMass);
+    return (stallTorqueNm * gearRatio * moduleCount) /
+            ((wheelDiameter.in(Units.Meters) / 2) *
+                    robotMass.in(Units.Kilogram));
   }
 
   /**
@@ -184,7 +194,7 @@ public class SwerveMath
   private static double calcMaxAccel(
       Rotation2d angle,
       List<Matter> matter,
-      double robotMass,
+      Measure<Mass> robotMass,
       SwerveDriveConfiguration config)
   {
     // Calculate the vertical mass moment using the floor as the datum.  This will be used later to
@@ -194,7 +204,7 @@ public class SwerveMath
     {
       centerMass = centerMass.plus(object.massMoment());
     }
-    Translation3d robotCG      = centerMass.div(robotMass);
+    Translation3d robotCG      = centerMass.div(robotMass.in(Units.Kilogram));
     Translation2d horizontalCG = robotCG.toTranslation2d();
 
     Translation2d projectedHorizontalCg =
@@ -288,7 +298,7 @@ public class SwerveMath
       ChassisSpeeds fieldVelocity,
       Pose2d robotPose,
       double loopTime,
-      double robotMass,
+      Measure<Mass> robotMass,
       List<Matter> matter,
       SwerveDriveConfiguration config)
   {
@@ -360,40 +370,45 @@ public class SwerveMath
    * Put an angle within the 360 deg scope of a reference. For example, given a scope reference of 756 degrees, assumes
    * the full scope is (720-1080), and places an angle of 22 degrees into it, returning 742 deg.
    *
-   * @param scopeReference Current Angle (deg)
-   * @param newAngle       Target Angle (deg)
-   * @return Closest angle within scope (deg)
+   * @param scopeReference Current Angle
+   * @param newAngle       Target Angle
+   * @return Closest angle within scope
    */
-  public static double placeInAppropriate0To360Scope(double scopeReference, double newAngle)
+  public static double placeInAppropriate0To360Scope(
+          Measure<Angle> scopeReference,
+          Measure<Angle> newAngle)
   {
+    double scopeReferenceDeg = scopeReference.in(Units.Degrees);
+    double newAngleDeg       = newAngle.in(Units.Degrees);
+
     double lowerBound;
     double upperBound;
-    double lowerOffset = scopeReference % 360;
+    double lowerOffset = scopeReferenceDeg % 360;
     if (lowerOffset >= 0)
     {
-      lowerBound = scopeReference - lowerOffset;
-      upperBound = scopeReference + (360 - lowerOffset);
+      lowerBound = scopeReferenceDeg - lowerOffset;
+      upperBound = scopeReferenceDeg + (360 - lowerOffset);
     } else
     {
-      upperBound = scopeReference - lowerOffset;
-      lowerBound = scopeReference - (360 + lowerOffset);
+      upperBound = scopeReferenceDeg - lowerOffset;
+      lowerBound = scopeReferenceDeg - (360 + lowerOffset);
     }
-    while (newAngle < lowerBound)
+    while (newAngleDeg < lowerBound)
     {
-      newAngle += 360;
+      newAngleDeg += 360;
     }
-    while (newAngle > upperBound)
+    while (newAngleDeg > upperBound)
     {
-      newAngle -= 360;
+      newAngleDeg -= 360;
     }
-    if (newAngle - scopeReference > 180)
+    if (newAngleDeg - scopeReferenceDeg > 180)
     {
-      newAngle -= 360;
-    } else if (newAngle - scopeReference < -180)
+      newAngleDeg -= 360;
+    } else if (newAngleDeg - scopeReferenceDeg < -180)
     {
-      newAngle += 360;
+      newAngleDeg += 360;
     }
-    return newAngle;
+    return newAngleDeg;
   }
 
   /**
@@ -403,9 +418,11 @@ public class SwerveMath
    * @param lastModuleState Previous {@link SwerveModuleState} used.
    * @param maxSpeed        Maximum speed of the modules.
    */
-  public static void antiJitter(SwerveModuleState moduleState, SwerveModuleState lastModuleState, double maxSpeed)
+  public static void antiJitter(SwerveModuleState moduleState,
+                                SwerveModuleState lastModuleState,
+                                Measure<Velocity<Distance>> maxSpeed)
   {
-    if (Math.abs(moduleState.speedMetersPerSecond) <= (maxSpeed * 0.01))
+    if (Math.abs(moduleState.speedMetersPerSecond) <= (maxSpeed.in(Units.MetersPerSecond) * 0.01))
     {
       moduleState.angle = lastModuleState.angle;
     }
