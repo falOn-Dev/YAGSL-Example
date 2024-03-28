@@ -1,6 +1,10 @@
 package swervelib.encoders;
 
 import com.reduxrobotics.sensors.canandcoder.Canandcoder;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 
 /**
  * HELIUM {@link Canandcoder} from ReduxRobotics absolute encoder, attached through the CAN bus.
@@ -57,12 +61,12 @@ public class CanAndCoderSwerve extends SwerveAbsoluteEncoder
   /**
    * Get the absolute position of the encoder.
    *
-   * @return Absolute position in degrees from [0, 360).
+   * @return Absolute position in a measure object.
    */
   @Override
-  public double getAbsolutePosition()
+  public Measure<Angle> getAbsolutePosition()
   {
-    return encoder.getAbsPosition() * 360;
+    return Units.Rotations.of(encoder.getAbsPosition());
   }
 
   /**
@@ -89,13 +93,13 @@ public class CanAndCoderSwerve extends SwerveAbsoluteEncoder
   }
 
   /**
-   * Get the velocity in degrees/sec.
+   * Get the velocity in a velocity measure.
    *
-   * @return velocity in degrees/sec.
+   * @return velocity in a measure object.
    */
   @Override
-  public double getVelocity()
+  public Measure<Velocity<Angle>> getVelocity()
   {
-    return encoder.getVelocity() * 360;
+    return Units.DegreesPerSecond.of(encoder.getVelocity() * 360);
   }
 }

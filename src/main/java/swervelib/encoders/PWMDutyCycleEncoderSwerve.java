@@ -1,5 +1,9 @@
 package swervelib.encoders;
 
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import swervelib.telemetry.Alert;
 
@@ -56,12 +60,12 @@ public class PWMDutyCycleEncoderSwerve extends SwerveAbsoluteEncoder
   /**
    * Get the absolute position of the encoder.
    *
-   * @return Absolute position in degrees from [0, 360).
+   * @return Absolute position in a measure object.
    */
   @Override
-  public double getAbsolutePosition()
+  public Measure<Angle> getAbsolutePosition()
   {
-    return (isInverted ? -1.0 : 1.0) * encoder.getAbsolutePosition() * 360;
+    return Units.Degrees.of((isInverted ? -1.0 : 1.0) * encoder.getAbsolutePosition() * 360);
   }
 
   /**
@@ -76,15 +80,15 @@ public class PWMDutyCycleEncoderSwerve extends SwerveAbsoluteEncoder
   }
 
   /**
-   * Get the velocity in degrees/sec.
+   * Get the velocity in a velocity measure.
    *
-   * @return velocity in degrees/sec.
+   * @return velocity in a measure object.
    */
   @Override
-  public double getVelocity()
+  public Measure<Velocity<Angle>> getVelocity()
   {
     inaccurateVelocities.set(true);
-    return encoder.get();
+    return Units.DegreesPerSecond.of(encoder.get());
   }
 
   /**

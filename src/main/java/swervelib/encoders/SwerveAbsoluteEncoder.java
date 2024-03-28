@@ -1,5 +1,9 @@
 package swervelib.encoders;
 
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Velocity;
+
 /**
  * Swerve abstraction class to define a standard interface with absolute encoders for swerve modules..
  */
@@ -37,7 +41,7 @@ public abstract class SwerveAbsoluteEncoder
    *
    * @return Absolute position in degrees from [0, 360).
    */
-  public abstract double getAbsolutePosition();
+  public abstract Measure<Angle> getAbsolutePosition();
 
   /**
    * Get the instantiated absolute encoder Object.
@@ -59,5 +63,5 @@ public abstract class SwerveAbsoluteEncoder
    *
    * @return velocity in degrees/sec.
    */
-  public abstract double getVelocity();
+  public abstract Measure<Velocity<Angle>> getVelocity();
 }

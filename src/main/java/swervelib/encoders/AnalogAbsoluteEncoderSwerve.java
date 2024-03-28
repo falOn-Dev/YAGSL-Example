@@ -1,5 +1,9 @@
 package swervelib.encoders;
 
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
 import swervelib.telemetry.Alert;
@@ -88,12 +92,12 @@ public class AnalogAbsoluteEncoderSwerve extends SwerveAbsoluteEncoder
   /**
    * Get the absolute position of the encoder.
    *
-   * @return Absolute position in degrees from [0, 360).
+   * @return Absolute position in a measure object.
    */
   @Override
-  public double getAbsolutePosition()
+  public Measure<Angle> getAbsolutePosition()
   {
-    return (inverted ? -1.0 : 1.0) * (encoder.getAverageVoltage() / RobotController.getVoltage5V()) * 360;
+    return Units.Rotations.of((inverted ? -1.0 : 1.0) * (encoder.getAverageVoltage() / RobotController.getVoltage5V()) * 360);
   }
 
   /**
@@ -122,14 +126,14 @@ public class AnalogAbsoluteEncoderSwerve extends SwerveAbsoluteEncoder
   }
 
   /**
-   * Get the velocity in degrees/sec.
+   * Get the velocity in velocity measure.
    *
-   * @return velocity in degrees/sec.
+   * @return velocity in a measure object.
    */
   @Override
-  public double getVelocity()
+  public Measure<Velocity<Angle>> getVelocity()
   {
     inaccurateVelocities.set(true);
-    return encoder.getValue() * 360;
+    return Units.DegreesPerSecond.of(encoder.getValue() * 360);
   }
 }

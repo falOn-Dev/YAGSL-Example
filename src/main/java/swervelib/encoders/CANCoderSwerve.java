@@ -9,6 +9,10 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.MagnetHealthValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.Velocity;
 import swervelib.telemetry.Alert;
 
 /**
@@ -120,10 +124,10 @@ public class CANCoderSwerve extends SwerveAbsoluteEncoder
   /**
    * Get the absolute position of the encoder. Sets {@link SwerveAbsoluteEncoder#readingError} on erroneous readings.
    *
-   * @return Absolute position in degrees from [0, 360).
+   * @return Absolute position in a measure object.
    */
   @Override
-  public double getAbsolutePosition()
+  public Measure<Angle> getAbsolutePosition()
   {
     readingError = false;
     MagnetHealthValue strength = encoder.getMagnetHealth().getValue();
@@ -133,7 +137,7 @@ public class CANCoderSwerve extends SwerveAbsoluteEncoder
     {
       readingError = true;
       readingFaulty.set(true);
-      return 0;
+      return Units.Rotations.of(0);
     } else
     {
       readingFaulty.set(false);
@@ -160,7 +164,7 @@ public class CANCoderSwerve extends SwerveAbsoluteEncoder
       readingIgnored.set(false);
     }
 
-    return angle.getValue() * 360;
+    return Units.Rotations.of(angle.getValue());
   }
 
   /**
@@ -206,13 +210,13 @@ public class CANCoderSwerve extends SwerveAbsoluteEncoder
   }
 
   /**
-   * Get the velocity in degrees/sec.
+   * Get the velocity in a velocity measure.
    *
-   * @return velocity in degrees/sec.
+   * @return velocity in a measure object.
    */
   @Override
-  public double getVelocity()
+  public Measure<Velocity<Angle>> getVelocity()
   {
-    return encoder.getVelocity().getValue() * 360;
+    return Units.RotationsPerSecond.of(encoder.getVelocity().getValue());
   }
 }
